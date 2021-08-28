@@ -3,6 +3,8 @@ import InputHandler from "/src/input";
 import Ball from "/src/ball";
 import Trophy from "/src/trophy";
 
+import { buildLevel, level1 } from "/src/levels";
+
 export default class Game {
   constructor(gameWidth, gameHeight) {
     this.gameWidth = gameWidth;
@@ -13,20 +15,20 @@ export default class Game {
     this.ball = new Ball(this);
     this.paddle = new Paddle(this);
 
-    let trophy = [];
-
-    for (let i = 0; i < 10; i++) {
-      trophy.push(new Trophy(this, { x: i * 52, y: 30 }));
-    }
+    let trophies = buildLevel(this, level1);
 
     //... => spread operator - adds an array to another array
-    this.gameObjects = [this.ball, this.paddle, ...trophy];
+    this.gameObjects = [this.ball, this.paddle, ...trophies];
 
     new InputHandler(this.paddle);
   }
 
   update(deltaTime) {
     this.gameObjects.forEach((object) => object.update(deltaTime));
+
+    this.gameObjects = this.gameObjects.filter(
+      (object) => !object.markedForDeletion
+    );
   }
 
   draw(ctx) {
