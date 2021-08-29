@@ -16,23 +16,31 @@ export default class Game {
   constructor(gameWidth, gameHeight) {
     this.gameWidth = gameWidth;
     this.gameHeight = gameHeight;
+    this.gamestate = GAMESTATE.MENU;
+    this.ball = new Ball(this);
+    this.paddle = new Paddle(this);
+    this.gameObjects = [];
+    new InputHandler(this.paddle, this);
   }
 
   start() {
-    this.gamestate = GAMESTATE.RUNNING;
-    this.ball = new Ball(this);
-    this.paddle = new Paddle(this);
+    //This prevents the level from rebuilding when spacebar is pressed AFTER starting the game
+    if (this.gamestate !== GAMESTATE.MENU) return;
 
     let trophies = buildLevel(this, level1);
 
     //... => spread operator - adds an array to another array
     this.gameObjects = [this.ball, this.paddle, ...trophies];
 
-    new InputHandler(this.paddle, this);
+    this.gamestate = GAMESTATE.RUNNING;
   }
 
   update(deltaTime) {
-    if (this.gamestate === GAMESTATE.PAUSED) return;
+    if (
+      this.gamestate === GAMESTATE.PAUSED ||
+      this.gamestate === GAMESTATE.MENU
+    )
+      return;
 
     this.gameObjects.forEach((object) => object.update(deltaTime));
 
@@ -53,6 +61,21 @@ export default class Game {
       ctx.fillStyle = "white";
       ctx.textAlign = "center";
       ctx.fillText("Paused", this.gameWidth / 2, this.gameHeight / 2);
+    }
+
+    if (this.gamestate === GAMESTATE.MENU) {
+      ctx.rect(0, 0, this.gameWidth, this.gameHeight);
+      ctx.fillStyle = "rgba(0, 0, 0, 1)";
+      ctx.fill();
+
+      ctx.font = "30px Arial";
+      ctx.fillStyle = "white";
+      ctx.textAlign = "center";
+      ctx.fillText(
+        "Press SPACEBAR To Start",
+        this.gameWidth / 2,
+        this.gameHeight / 2
+      );
     }
   }
 
